@@ -83,7 +83,7 @@ Module.register("MMM-Notion", {
 		const databaseTitle = document.createElement("div")
 		container.id = "mmm-notion-database"
 		databaseTitle.id = "mmm-notion-database-title"
-		databaseTitle.innerText = `${properties.title}:`
+		databaseTitle.innerText = `${properties.title}`
 		if (properties.title !== undefined) {
 			if (properties.showTitle === undefined || properties.showTitle)
 				container.appendChild(databaseTitle)
