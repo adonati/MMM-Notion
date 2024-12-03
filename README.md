@@ -1,3 +1,8 @@
+FORK: Added ability to edit lists in Notion: edit text of items, edit 'Quantity' (numeric, 1-10), add and delete items. 
+This results in a MUCH DIMINISHED FLEXIBILITY with the lists: they must have an 'Item' (text) column as the title, and a 'Quantity' numeric column, which may or may not be displayed.
+There could be other columns, but editing isn't set up for those, nor adding rows. Also the new code is pretty terrible in a couple places.
+
+
 # MMM-Notion
 
 This is a module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/).
