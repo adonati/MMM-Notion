@@ -6,10 +6,12 @@
  */
 
 class PropertiesView {
-	constructor(config, notionProps) {
+	constructor(config, notionProps, rowId, rootObject) {
 		this.wrapper = this.createWrapper()
 		this.config = config
 		this.notionProps = notionProps
+		this.rowId = rowId
+		this.rootObject = rootObject
 	}
 
 	createWrapper() {
@@ -19,6 +21,7 @@ class PropertiesView {
 	}
 
 	createProperty(property) {
+		//alert(JSON.stringify(property,null,2))
 		switch (property.type) {
 			case "title":
 				this.createTitleWrapper()
@@ -30,7 +33,8 @@ class PropertiesView {
 				this.createText(property.rich_text)
 				break;
 			case "number":
-				this.createPhoneNumber(property.number)
+				//this.createNumber(property.number)			// [Alex] ERROR IN ORIGINAL SOURCE - this was calling createPhoneNumber()
+				this.createNumber(property)						// [Alex] Sending the whole property so I can get the ID
 				break;
 			case "select":
 				this.createSelect(property.select.name, property.select.color)
@@ -84,8 +88,55 @@ class PropertiesView {
 	createTitle(titleContainer) {
 		const titleDom = document.createElement("div")
 		titleDom.id = "mmm-notion-listview-title"
+		titleDom.className = "notionListItem"
 		titleDom.innerText = this.findTitleProp(this.notionProps.properties)
 		titleContainer.appendChild(titleDom)
+
+		// Additional properties to edit
+		const buttonBar = document.createElement("div")
+		buttonBar.className = "editItemButtonBar hideMe"
+		const titleEditOK = document.createElement("i")
+		//titleEditOK.id = 
+		titleEditOK.className = "editButton fa-regular fa-circle-check"
+		titleEditOK.style = "color:green"
+		buttonBar.appendChild(titleEditOK)
+		
+		const titleEditCancel = document.createElement("i")
+		//titleEditCancel.id = 
+		titleEditCancel.className = "editButton fa-solid fa-xmark"
+		titleEditCancel.style = "color:red"
+		buttonBar.appendChild(titleEditCancel)
+
+		const titleDelete = document.createElement("i")
+		//titleDelete.id = 
+		titleDelete.className = "editButton fa-regular fa-trash-can"
+		titleDelete.style = "color:white"
+		buttonBar.appendChild(titleDelete)
+		
+		titleContainer.appendChild(buttonBar)
+
+		// Event handlers
+		const self = this
+		const rowButtonBar = buttonBar
+		titleDom.addEventListener("click", function() {
+			self.rootObject.makeEditable(titleDom,rowButtonBar)
+		})
+		titleEditOK.addEventListener("click", function() {
+			self.rootObject.makeUnEditable(titleDom,rowButtonBar)
+			self.rootObject.updateRowData("Title",self.rowId,titleDom.innerText);
+		})
+		titleEditCancel.addEventListener("click", function() {
+			self.rootObject.makeUnEditable(titleDom,rowButtonBar)
+			self.rootObject.refreshContents()
+		})
+		titleDelete.addEventListener("click", function() {
+			self.rootObject.deleteRow(self.rowId)
+			// Refresh the display after the deletion has taken effect (might have to bump up time?)
+			setTimeout(function() {
+				self.rootObject.refreshContents()
+			},500);
+		})
+
 	}
 
 	findTitleProp(notionProps) {
@@ -140,12 +191,36 @@ class PropertiesView {
 		return html;
 	}
 
-	createNumber(value) {
-		if (value === null) return
+//	createNumber(value) {
+	createNumber(property) {
+		const value =  isNaN(parseInt(property.number))? 1 : property.number
+		if (value === null) return	
+		
 		const number = document.createElement("div")
-		number.id = "mmm-notion-property-number"
-		number.innerText = value
+		number.id = "mmm-notion-property-number-" + this.rowId
+		
+		const numberSelector = document.createElement("select")
+		numberSelector.id = "numberSelector-" + this.rowId
+		numberSelector.name = "Selector"
+		numberSelector.className = "quantitySelector"
+		for(var i=0;i < 10; i++) {
+			const opt = document.createElement("option")
+			opt.value = "" + i
+			opt.innerHTML = "" + i
+			if (i == value) {
+				opt.selected = "true"
+			}
+			numberSelector.appendChild(opt)
+		}
+		number.appendChild(numberSelector)
+		
 		this.wrapper.appendChild(number)
+
+		const self = this
+		numberSelector.addEventListener("change", function(e) {
+			self.rootObject.updateRowData("Quantity",self.rowId,e.target.value);
+		})
+
 	}
 
 	createSelect(value, color) {
