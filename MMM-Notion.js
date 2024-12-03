@@ -93,7 +93,8 @@ Module.register("MMM-Notion", {
 	},
 
 	createListView: function (wrapper, properties) {
-		const listView = new ListView(properties)
+		const self = this
+		const listView = new ListView(properties,self)
 		wrapper.appendChild(listView.wrapper)
 	},
 
@@ -122,6 +123,51 @@ Module.register("MMM-Notion", {
 		};
 	},
 
+	refreshContents: function () {
+		this.sendSocketNotification("MMM-NOTION-UPDATE_PLEASE", this.id);
+	},
+
+	updateRowData: function (field, rowId, newValue) {
+		var notificationCmd = "";
+		switch (field) {
+			case "Title":
+				notificationCmd = "MMM-NOTION-UPDATE_TITLE"
+				break;
+			case "Quantity":
+				notificationCmd = "MMM-NOTION-UPDATE_QUANTITY"
+				break;
+		}
+		const payload = {
+			callId: this.id,
+			rowId: rowId,
+			newValue: newValue
+		}
+		this.sendSocketNotification(notificationCmd, payload);
+	},
+	addRow: function (title) {
+		const payload = {
+			callId: this.id,
+			title: title,
+		}
+		this.sendSocketNotification("MMM-NOTION-ADD_ROW", payload);
+	},
+	deleteRow: function (rowId) {
+		const payload = {
+			callId: this.id,
+			rowId: rowId,
+		}
+		this.sendSocketNotification("MMM-NOTION-DELETE_ROW", payload);
+	},
+	makeEditable: function(titleDiv, rowButtonBar) {
+		titleDiv.contentEditable = "true"
+		titleDiv.classList.add("notionEditing")
+		rowButtonBar.classList.remove("hideMe")
+	},
+	makeUnEditable: function(titleDiv, rowButtonBar) {
+		titleDiv.contentEditable = "false"
+		titleDiv.classList.remove("notionEditing")
+		rowButtonBar.classList.add("hideMe")
+	},
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === `MMM-Notion-DATABASE-DATA-${this.id}`) {
