@@ -6,10 +6,11 @@
  */
 
 class ListViewElement {
-	constructor(notionProps, config) {
+	constructor(notionProps, config, rootObject) {
 		this.notionProps = notionProps
 		this.wrapper = this.createPageWrapper()
 		this.config = config
+		this.rootObject = rootObject
 		this.init()
 	}
 
@@ -22,7 +23,7 @@ class ListViewElement {
 	init() {
 		this.checkElementTitle()
 		if (this.config.displayProps.length > 0)
-			this.createProperties(this.notionProps.properties, this.config.displayProps)
+			this.createProperties(this.notionProps.properties, this.config.displayProps, this.notionProps.id)
 	}
 
 
@@ -34,9 +35,9 @@ class ListViewElement {
 		}
 	}
 
-	createProperties(properties, propNames) {
+	createProperties(properties, propNames, rowId) {
 		if (this.checkValidPropName(properties, propNames, this.config.database_id)) return
-		const propertyElements = new PropertiesView(this.config, this.notionProps)
+		const propertyElements = new PropertiesView(this.config, this.notionProps, rowId, this.rootObject)
 		propNames.forEach(propName => {
 			const property = this.notionProps.properties[propName]
 			propertyElements.createProperty(property)
